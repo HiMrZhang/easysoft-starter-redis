@@ -2,9 +2,7 @@ package com.easysoft.redis.autoConfigure;
 
 import com.easysoft.redis.IRedisOperater;
 import com.easysoft.redis.RedisOperater;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +23,6 @@ import java.io.Serializable;
  */
 @Configuration
 @EnableConfigurationProperties(RedisProperties.class)
-@AutoConfigureAfter({RedisAutoConfiguration.class})
 public class RedisAutoConfigure {
 
     /**
@@ -33,15 +30,18 @@ public class RedisAutoConfigure {
      * @return
      */
     @Bean
-    @ConditionalOnMissingBean(RedisTemplate.class)
     public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Serializable> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
-        // value值的序列化采用GenericJackson2JsonRedisSerializer
+        /**
+         * value值的序列化采用GenericJackson2JsonRedisSerializer
+         */
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
-        // key的序列化采用StringRedisSerializer
+        /**
+         * key的序列化采用StringRedisSerializer
+         */
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setConnectionFactory(redisConnectionFactory);
