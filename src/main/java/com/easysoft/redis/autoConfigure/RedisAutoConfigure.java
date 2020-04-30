@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.io.Serializable;
@@ -24,26 +25,30 @@ import java.io.Serializable;
 @Configuration
 @EnableConfigurationProperties(RedisProperties.class)
 public class RedisAutoConfigure {
-
+    @Bean
+    @ConditionalOnMissingBean(RedisSerializer.class)
+    public RedisSerializer valueSerializer() {
+        return new GenericJackson2JsonRedisSerializer();
+    }
     /**
      * @param redisConnectionFactory
      * @return
      */
     @Bean
-    public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory,RedisSerializer valueSerializer) {
         RedisTemplate<String, Serializable> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
         /**
          * value值的序列化采用GenericJackson2JsonRedisSerializer
          */
-        template.setValueSerializer(serializer);
-        template.setHashValueSerializer(serializer);
+        template.setValueSerializer(valueSerializer);
+        template.setHashValueSerializer(valueSerializer);
         /**
          * key的序列化采用StringRedisSerializer
          */
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setKeySerializer(keySerializer);
+        template.setHashKeySerializer(keySerializer);
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
